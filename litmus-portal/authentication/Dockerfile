@@ -11,8 +11,6 @@ ENV GOOS=${TARGETOS} \
     GOARCH=${TARGETARCH}
 
 RUN go env
-
-
 RUN CGO_ENABLED=0 go build -o /output/server -v ./api/
 
 # Packaging stage
@@ -22,7 +20,7 @@ FROM litmuschaos/infra-alpine
 
 LABEL maintainer="LitmusChaos"
 
-#COPY --from=builder /output/server /litmus
+COPY --from=builder /output/server /litmus
 
 CMD ["./server"]
 
