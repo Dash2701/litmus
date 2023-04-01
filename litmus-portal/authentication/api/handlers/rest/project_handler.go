@@ -8,6 +8,7 @@ import (
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"litmus/litmus-portal/authentication/pkg/validations"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -573,7 +574,7 @@ func RemoveInvitation(service services.ApplicationService) gin.HandlerFunc {
 	}
 }
 
-//  UpdateProjectName is used to update a project's name
+// UpdateProjectName is used to update a project's name
 func UpdateProjectName(service services.ApplicationService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userRequest entities.ProjectInput
@@ -665,5 +666,46 @@ func GetProjectRole(service services.ApplicationService) gin.HandlerFunc {
 			"role": role,
 		})
 
+	}
+
+}
+
+// FK to add user to a defualt project
+func AddToDefaultProject(service services.ApplicationService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var member entities.CreateProjectInput
+		err := c.BindJSON(&member)
+		if err != nil {
+			log.Warn(err)
+			c.JSON(utils.ErrorStatusCodes[utils.ErrInvalidRequest], presenter.CreateErrorResponse(utils.ErrInvalidRequest))
+			return
+		}
+
+		user, err := service.GetUser(member.UserID)
+
+		newMember := &entities.Member{
+			UserID:     user.ID,
+			Role:       "Viewer",
+			Invitation: "Accepted",
+			JoinedAt:   strconv.FormatInt(time.Now().Unix(), 10),
+		}
+		projectId := os.Getenv("DEFAULT_PROJECT_ID")
+		err = service.AddMember(projectId, newMember)
+		if err != nil {
+			log.Error(err)
+			c.JSON(utils.ErrorStatusCodes[utils.ErrServerError], presenter.CreateErrorResponse(utils.ErrServerError))
+			return
+		}
+
+		c.JSON(200, gin.H{"data": types.Member{
+			UserID:        user.ID,
+			UserName:      user.UserName,
+			Name:          user.Name,
+			Role:          entities.MemberRole(newMember.Role),
+			Email:         user.Email,
+			Invitation:    entities.Invitation(newMember.Invitation),
+			JoinedAt:      newMember.JoinedAt,
+			DeactivatedAt: user.DeactivatedAt,
+		}})
 	}
 }

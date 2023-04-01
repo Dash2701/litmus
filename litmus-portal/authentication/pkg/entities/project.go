@@ -50,6 +50,13 @@ type MemberInput struct {
 	Role      *MemberRole `json:"role"`
 }
 
+type AddMemberInput struct {
+	ProjectName string      `bson:"project_name" json:"project_name"`
+	UserID      string      `json:"user_id"`
+	Role        *MemberRole `json:"role"`
+	Invitation  Invitation  `bson:"invitation"`
+}
+
 // GetProjectOutput takes a Project struct as input and returns the graphQL model equivalent
 func (project *Project) GetProjectOutput() *Project {
 

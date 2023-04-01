@@ -99,10 +99,11 @@ func DexCallback(userService services.ApplicationService) gin.HandlerFunc {
 		}
 		createdAt := strconv.FormatInt(time.Now().Unix(), 10)
 
+		// FK Username change from Email
 		var userData = entities.User{
 			Name:      claims.Name,
 			Email:     claims.Email,
-			UserName:  claims.Email,
+			UserName:  claims.Name,
 			Role:      entities.RoleUser,
 			CreatedAt: &createdAt,
 		}
