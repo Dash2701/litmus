@@ -670,7 +670,7 @@ func GetProjectRole(service services.ApplicationService) gin.HandlerFunc {
 
 }
 
-// FK to add user to a defualt project
+// DASH : To add user to a defualt project
 func AddToDefaultProject(service services.ApplicationService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var member entities.CreateProjectInput
@@ -682,6 +682,11 @@ func AddToDefaultProject(service services.ApplicationService) gin.HandlerFunc {
 		}
 
 		user, err := service.GetUser(member.UserID)
+		if err != nil {
+			log.Error(err)
+			c.JSON(utils.ErrorStatusCodes[utils.ErrServerError], presenter.CreateErrorResponse(utils.ErrServerError))
+			return
+		}
 
 		newMember := &entities.Member{
 			UserID:     user.ID,
