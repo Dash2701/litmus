@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -690,27 +691,19 @@ func AddToDefaultProject(service services.ApplicationService) gin.HandlerFunc {
 
 		newMember := &entities.Member{
 			UserID:     user.ID,
-			Role:       "Viewer",
+			Role:       "Owner",
 			Invitation: "Accepted",
 			JoinedAt:   strconv.FormatInt(time.Now().Unix(), 10),
 		}
 		projectId := os.Getenv("DEFAULT_PROJECT_ID")
 		err = service.AddMember(projectId, newMember)
 		if err != nil {
-			log.Error(err)
+			logrus.Info(err)
 			c.JSON(utils.ErrorStatusCodes[utils.ErrServerError], presenter.CreateErrorResponse(utils.ErrServerError))
 			return
 		}
+		logrus.Info("Added the user to default")
 
-		c.JSON(200, gin.H{"data": types.Member{
-			UserID:        user.ID,
-			UserName:      user.UserName,
-			Name:          user.Name,
-			Role:          entities.MemberRole(newMember.Role),
-			Email:         user.Email,
-			Invitation:    entities.Invitation(newMember.Invitation),
-			JoinedAt:      newMember.JoinedAt,
-			DeactivatedAt: user.DeactivatedAt,
-		}})
+		c.JSON(200, gin.H{"data": "successful"})
 	}
 }
